@@ -5,11 +5,13 @@ using System.Reflection;
 using ReactiveUI;
 using System.Reactive;
 using Task_2.Models;
+using System.Collections.Generic;
 
 namespace Task_4.ViewModels;
 
 public class ReflectionViewModel : ReactiveObject
 {
+    private readonly Dictionary<Type, object> _instances = new();
     private string _assemblyPath;
     public string AssemblyPath
     {
@@ -40,6 +42,11 @@ public class ReflectionViewModel : ReactiveObject
             if (value != null)
             {
                 LoadMembers(value);
+                // Показываем информацию о существующем экземпляре
+                if (_instances.TryGetValue(value, out var instance))
+                {
+                    Result = $"Используется существующий экземпляр: {instance}";
+                }
             }
         }
     }
@@ -75,8 +82,8 @@ public class ReflectionViewModel : ReactiveObject
                         var inputParams = string.IsNullOrWhiteSpace(Parameters) ? new string[0] : Parameters.Split(',');
                         object[] convertedParams = new object[methodParams.Length];
 
-                        // Создаем экземпляр класса
-                        var instance = CreateInstance(SelectedClass);
+                        // Получаем или создаем экземпляр класса
+                        var instance = GetOrCreateInstance(SelectedClass);
                         if (instance == null)
                         {
                             Result = "Ошибка: Не удалось создать экземпляр класса";
@@ -107,11 +114,11 @@ public class ReflectionViewModel : ReactiveObject
 
                         // Выполняем метод
                         var result = method.Invoke(instance, convertedParams);
-                        Result = $"Результат выполнения: {result ?? "void"}";
+                        Result = $"Результат выполнения: {result ?? "void"}\nТекущий экземпляр: {instance}";
                     }
                     else if (SelectedMember is PropertyInfo property)
                     {
-                        var instance = CreateInstance(SelectedClass);
+                        var instance = GetOrCreateInstance(SelectedClass);
                         if (instance == null)
                         {
                             Result = "Ошибка: Не удалось создать экземпляр класса";
@@ -119,7 +126,7 @@ public class ReflectionViewModel : ReactiveObject
                         }
 
                         var value = property.GetValue(instance);
-                        Result = $"Значение свойства: {value}";
+                        Result = $"Значение свойства: {value}\nТекущий экземпляр: {instance}";
                     }
                 }
                 catch (Exception ex)
@@ -128,6 +135,23 @@ public class ReflectionViewModel : ReactiveObject
                 }
             }
         });
+    }
+
+    private object? GetOrCreateInstance(Type type)
+    {
+        // Если экземпляр уже существует, возвращаем его
+        if (_instances.TryGetValue(type, out var existingInstance))
+        {
+            return existingInstance;
+        }
+
+        // Создаем новый экземпляр
+        var instance = CreateInstance(type);
+        if (instance != null)
+        {
+            _instances[type] = instance;
+        }
+        return instance;
     }
 
     private object? CreateInstance(Type type)
