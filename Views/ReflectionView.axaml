@@ -1,0 +1,44 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:Task_4.ViewModels"
+        mc:Ignorable="d"
+        x:Class="Task_4.Views.ReflectionView"
+        Title="Reflection Example"
+        x:DataType="vm:ReflectionViewModel">
+    <StackPanel Margin="10">
+        <TextBox Width="300" Watermark="Введите путь к библиотеке" Text="{Binding AssemblyPath, Mode=TwoWay}"/>
+        <Button Content="Загрузить" Command="{Binding LoadAssemblyCommand}" Width="100" Margin="0,10,0,0"/>
+        <TextBlock Text="Доступные классы:" Margin="0,10,0,5"/>
+        <ListBox ItemsSource="{Binding Classes}" SelectedItem="{Binding SelectedClass}" Height="150">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}"/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        
+        <TextBlock Text="Методы и свойства выбранного класса:" Margin="0,10,0,5"/>
+        <ListBox ItemsSource="{Binding Members}" 
+                 SelectedItem="{Binding SelectedMember}" 
+                 Height="150">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock>
+                        <Run Text="{Binding Name}"/>
+                        <Run Text=" ("/>
+                        <Run Text="{Binding MemberType}"/>
+                        <Run Text=")"/>
+                    </TextBlock>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <TextBox Width="300" Watermark="Введите параметры через запятую" Text="{Binding Parameters}"/>
+        <Button Content="Выполнить" Command="{Binding ExecuteMethodCommand}" Width="100" Margin="0,10,0,0"/>
+        <TextBlock Text="{Binding Result}" 
+                   TextWrapping="Wrap" 
+                   Margin="0,10,0,0"
+                   Foreground="Blue"/>
+    </StackPanel>
+</Window> 
